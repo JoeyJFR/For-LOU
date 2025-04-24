@@ -1,30 +1,30 @@
-SRCS_DIR = src
-OBJS_DIR = obj
+include cub3d.mk
 
-SRCS = main.c init.c hook.c draw1.c draw2.c move.c\
-game_utils1.c
+OBJS_DIR = obj/
 
-
-OBJS=$(addprefix $(OBJS_DIR)/, $(SRCS:.c=.o))
-
+OBJS := $(patsubst $(SRCS_DIR)%.c,$(OBJS_DIR)%.o,$(SRCS))
 NAME = cub3D
 
 CC = cc
-
-CFLAGS = -Wall -Werror -Wextra -Iincludes
-
+CFLAGS = -I includes/ -g3
+# -Wall -Werror -Wextra
+LIBFT_FLAGS = -Llibft -Ilibft/srcs/ -lft
 LFLAGS = -L./includes/minilibx-linux -lmlx_Linux -lX11 -lXext -lm
 
 MINILIBX_DIR = includes/minilibx-linux
 MINILIBX = $(MINILIBX_DIR)/libmlx_Linux.a
 
 
-all: $(NAME)
+all: init $(NAME)
 
-$(NAME): $(OBJS) $(MINILIBX)
-	$(CC) $(OBJS) $(LFLAGS) -o $(NAME) 
+init:
+	@mkdir -p $(OBJS_DIR)
 
-$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c includes/cub.h Makefile | $(OBJS_DIR)
+$(NAME): libft/libft.a $(OBJS) $(MINILIBX)
+	$(CC) $(OBJS) $(LIBFT_FLAGS) $(LFLAGS) -o $(NAME)
+
+$(OBJS_DIR)%.o: $(SRCS_DIR)%.c includes/cub.h Makefile | $(OBJS_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJS_DIR):
@@ -33,12 +33,20 @@ $(OBJS_DIR):
 $(MINILIBX):
 	make -C $(MINILIBX_DIR)
 
+libft/libft.a: FORCE
+	@$(MAKE) -C libft
+
 clean:
 	rm -rf $(OBJS_DIR)
+	rm -rf libft/objs
 
 fclean: clean
 	rm -rf $(NAME)
+	rm -rf libft/libft.a
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re init
+
+.PHONY: FORCE
+FORCE:

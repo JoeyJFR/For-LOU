@@ -1,6 +1,7 @@
 #ifndef CUB_H
 # define CUB_H
 
+# include "../libft/srcs/libft/libft.h"
 # include "./minilibx-linux/mlx.h"
 # include <math.h>
 # include <X11/X.h>
@@ -12,9 +13,14 @@
 # define WIDTH 1280
 # define HEIGHT 720
 # define PI 3.14159265359
-# define SPEED 5
-# define ANGLE PI/90
-# define BLOCK_SIZE 64
+# define SPEED 3
+# define ANGLE 0.034906585f
+# define FOV   1.0471975512f
+# define RAY_NB 120
+# define RAY_LENGTH 400
+# define PLAYER_BUFFER 5
+# define PLAYER_RATIO 5
+
 
 # define MINIMAP_MODE 0
 
@@ -92,14 +98,34 @@ typedef struct s_game
 	t_win_img	win_img;
 	t_map_img	map_img;
 
+	int			tile_size;
+
 	t_player	player;
-	t_map		real_map;
-	char		**test_map;
+	t_map		map_info;
 }	t_game;
+
+//side: 0 for X, 1 for Y
+typedef struct s_ray
+{
+	float	ray_x;
+	float	ray_y;
+	float	ray_angle;
+	float	chage_along_ray_convert_to_1_unitx;
+	float	chage_along_ray_convert_to_1_unity;
+	float	d_x;
+	float	d_y;
+	int		x_move;
+	int		y_move;
+	int		map_x;
+	int		map_y;
+	int		hit;
+	int		side;
+}	t_ray;
+
 
 /* init */
 void	init_game(t_game *game);
-void	init_player(t_player *player);
+void	init_player(t_game *game);
 void	init_hook(t_game *game);
 
 /* hook */
@@ -108,10 +134,13 @@ int		close_handle(t_game *game);
 int		key_release_handle(int keysym, t_game *game);
 
 /* draw */
-void	draw_square(int x, int y, int size, int color, t_game *game);
+
+void 	draw_map(t_game *g);
+void	my_pixel_put(t_win_img *img, int x, int y, int color);
+int		is_wall(float x, float y, t_game *g, float angle);
+
+/* draw loop*/
 int		draw_loop(t_game *game);
-void	draw_line(t_player *player, t_game *game, float start_x, int i);
-void	put_pixel(int x, int y, int color, t_game *game);
 
 /* utils */
 void	exit_handle(t_game *game);
@@ -119,8 +148,10 @@ void	malloc_error(t_game *game);
 void	d_free(t_game *game);
 void	d_w_free(t_game *game);
 void	d_w_i_free(t_game *game);
+void	free_map(t_map *map, int ***tab);
+int		free_texture(t_texture texture);
 
 /* move */
-void	move_player(t_player *player);
+void	move_player(t_game *g);
 
 #endif
